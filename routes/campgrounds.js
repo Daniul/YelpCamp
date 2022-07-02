@@ -6,12 +6,16 @@ const campground = require("../models/campground");
 const { campgroundSchema } = require("../schemas.js");
 const { isLoggedIn, isAuthor, validateCampground } = require("../middleware");
 const campgrounds = require("../controllers/campgrounds");
+const multer = require("multer");
+const { storage } = require("../cloudinary/index");
+const upload = multer({ storage });
 
 router
   .route("/")
   .get(catchAsync(campgrounds.index))
   .post(
     isLoggedIn,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.createCampground)
   );
@@ -24,21 +28,17 @@ router
   .put(
     isLoggedIn,
     isAuthor,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.updateCampground)
   )
-  .delete(
-    isLoggedIn,
-    isAuthor,
-    catchAsync(campgrounds.deleteCampground)
-  )
+  .delete(isLoggedIn, isAuthor, catchAsync(campgrounds.deleteCampground));
 
 router.get(
   "/:id/edit",
   isLoggedIn,
   isAuthor,
   catchAsync(campgrounds.renderEditCampground)
-)
-
+);
 
 module.exports = router;
